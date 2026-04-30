@@ -1,0 +1,35 @@
+backend:
+  name: git-gateway
+  branch: main
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+locale: "zh_Hant"
+
+collections:
+  - name: "products"
+    label: "商品管理"
+    files:
+      - file: "data/products.json"
+        label: "商品列表"
+        name: "products"
+        fields:
+          - label: "商品"
+            name: "products"
+            widget: "list"
+            summary: "{{fields.category}} / {{fields.subcategory}} - {{fields.name}}"
+            fields:
+              - { label: "商品名稱", name: "name", widget: "string" }
+              - label: "分類"
+                name: "category"
+                widget: "select"
+                options: ["行李箱", "鋁梯", "燈具照明", "工具五金", "水電材料", "生活百貨", "交通器材", "螺絲耗材", "清潔用品", "園藝工具", "汽車用品", "其他商品"]
+              - { label: "小分類", name: "subcategory", widget: "string", required: false }
+              - { label: "商品圖片", name: "image", widget: "image", required: false }
+              - { label: "商品介紹", name: "description", widget: "text", required: false }
+              - label: "規格"
+                name: "specs"
+                widget: "list"
+                required: false
+                field: { label: "規格文字", name: "spec", widget: "string" }

@@ -1,0 +1,45 @@
+
+const icons = {"行李箱":"🧳","鋁梯":"🪜","燈具照明":"💡","工具五金":"🛠️","水電材料":"🚰","生活百貨":"🏡","交通器材":"🛵","螺絲耗材":"🔩","清潔用品":"🧹","園藝工具":"🌿","汽車用品":"🚗","其他商品":"📦"};
+const defaultCats = ["行李箱","鋁梯","燈具照明","工具五金","水電材料","生活百貨","交通器材","螺絲耗材","清潔用品","園藝工具","汽車用品","其他商品"];
+
+async function getProducts(){
+  const r = await fetch('/data/products.json?ts=' + Date.now());
+  const data = await r.json();
+  return data.products || [];
+}
+function productCard(p){
+  return `<article class="product">
+    <img src="${p.image||''}" alt="${p.name}" onerror="this.src='/assets/uploads/qr.png'">
+    <div class="body">
+      <h3>${p.name}</h3>
+      <div class="tags"><span>${p.subcategory||p.category}</span><span>LINE詢價</span></div>
+      <p>${p.description||''}</p>
+      <ul>${(p.specs||[]).map(s=>`<li>${s}</li>`).join('')}</ul>
+      <a class="lineSmall" href="/#line">💬 LINE詢價</a>
+    </div>
+  </article>`;
+}
+(async()=>{
+  const products = await getProducts();
+  const catSet = new Set([...defaultCats, ...products.map(p=>p.category)]);
+  const cats = document.getElementById('cats');
+  if(cats){
+    cats.innerHTML = [...catSet].map(c=>`<a class="cat" href="/products.html?cat=${encodeURIComponent(c)}"><span>${icons[c]||'📦'}</span>${c}</a>`).join('');
+  }
+  const list = document.getElementById('products');
+  if(list){
+    const params = new URLSearchParams(location.search);
+    const cat = params.get('cat') || '鋁梯';
+    document.getElementById('pageTitle').textContent = (icons[cat]||'📦') + ' ' + cat;
+    const data = products.filter(p=>p.category===cat);
+    const subs = ['全部', ...new Set(data.map(p=>p.subcategory).filter(Boolean))];
+    let current = '全部';
+    function render(){
+      document.getElementById('filters').innerHTML = subs.map(s=>`<button class="filter ${s===current?'on':''}" data-sub="${s}">${s}</button>`).join('');
+      const show = current==='全部'?data:data.filter(p=>p.subcategory===current);
+      list.innerHTML = show.map(productCard).join('') || '<p class="empty">目前還沒有商品。</p>';
+      document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{current=b.dataset.sub;render();});
+    }
+    render();
+  }
+})();
